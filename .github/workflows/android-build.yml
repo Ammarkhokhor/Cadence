@@ -1,5 +1,5 @@
-      - name: Show Signing Report
-        run: ./gradlew signingReport
+name: Build Cadence APK
+
 on:
   workflow_dispatch: # Allows manual trigger
 
@@ -17,7 +17,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # UPDATED STEP: This now adds BOTH keys to local.properties
+      # This creates the file Spotify needs to verify your account
       - name: Create local.properties
         run: |
           echo "SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}" > local.properties
@@ -25,6 +25,10 @@ jobs:
 
       - name: Grant Execute Permission
         run: chmod +x gradlew
+
+      # IMPORTANT: This shows you the SHA-1 key in the GitHub Logs
+      - name: Show Signing Report
+        run: ./gradlew signingReport
 
       - name: Build APK
         run: ./gradlew assembleDebug
@@ -34,3 +38,4 @@ jobs:
         with:
           name: Cadence-App
           path: app/build/outputs/apk/debug/app-debug.apk
+          
