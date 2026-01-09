@@ -1,5 +1,5 @@
-name: Build Cadence APK
-
+      - name: Show Signing Report
+        run: ./gradlew signingReport
 on:
   workflow_dispatch: # Allows manual trigger
 
