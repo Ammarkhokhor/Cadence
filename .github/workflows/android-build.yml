@@ -1,7 +1,7 @@
 name: Build Cadence APK
 
 on:
-  workflow_dispatch: # Allows manual trigger from Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -17,7 +17,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # Creates the local.properties file with your Spotify keys
       - name: Create local.properties
         run: |
           echo "SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}" > local.properties
@@ -26,15 +25,17 @@ jobs:
       - name: Grant Execute Permission
         run: chmod +x gradlew
 
-      # FIX: This creates the folder and the keystore that was "missing" in your last run
+      # This creates the key in BOTH locations to make sure Gradle finds it
       - name: Generate Debug Keystore
         run: |
           mkdir -p ~/.android
+          mkdir -p ~/.config/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          cp ~/.android/debug.keystore ~/.config/.android/debug.keystore
 
-      # This will now succeed and show you the SHA-1 in the logs
-      - name: Show Signing Report
-        run: ./gradlew signingReport
+      # Instead of just running Gradle, we'll use keytool to PRINT the SHA-1 directly to the log
+      - name: Get SHA-1 Fingerprint
+        run: keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android
 
       - name: Build APK
         run: ./gradlew assembleDebug
@@ -44,4 +45,5 @@ jobs:
         with:
           name: Cadence-App
           path: app/build/outputs/apk/debug/app-debug.apk
+          
           
